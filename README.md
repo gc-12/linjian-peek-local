@@ -1,5 +1,55 @@
 # 掌心窗公开版 v0.3.8.4
 
+## 本分支新增：内置本地 MCP 服务（v0.3.8.4-mcp1）
+
+本分支在 APK 内直接内置了一个 **本地 MCP Streamable HTTP 服务器**，无需服务器、无需 Node/Termux。
+
+### 使用方式
+
+1. 打开 App → 设置 → 「本地 MCP 服务」→ 点「启动服务」。
+2. 页面会显示 MCP 地址（例如 `http://127.0.0.1:5000/mcp/<随机token>`），**点地址即可复制**。
+3. 把地址填进你的 MCP 客户端（Claude Desktop / Cursor / Cherry Studio 等），选择 Streamable HTTP 类型即可连接。
+
+启动后 App 会以前台服务保持运行（通知里显示当前地址），被系统清理后会自动重启，可在通知里点「停止」。
+
+### 支持的工具（全部在手机本地直接执行）
+
+截图、读屏节点、点击文字/坐标、输入文字、打开 App、返回/主页/最近任务/锁屏、手势滑动、闹钟、通知提醒、天气、应用门禁（屏幕休息）、专注模式、归电、守护日历、TA 的日记、小金库、外卖助手、关心策略/到访记录、动作序列等约 100 个工具。
+
+### 局域网访问
+
+- 默认**只监听 127.0.0.1**（仅本机 App/客户端可连）。
+- 勾选「允许局域网访问」后，服务改为监听 0.0.0.0，地址显示为 `http://<局域网IP>:5000/mcp/<随机token>`，同一 WiFi 下的其他设备可连接。
+- 安全提示：开启局域网后，同一 WiFi 下**知道地址的设备即可控制本机**，请谨慎开启；随机 token 与「拒绝浏览器 Origin」仍然生效。
+
+### 安全设计
+
+- 只绑定回环地址（默认），每次安装生成 32 位随机 hex token 放在路径里，token 比较为常量时间。
+- 拒绝任何带 `Origin` 头（浏览器来源）的请求。
+- 与 App 已有签名一致（`aea75c9b...`），可直接覆盖安装老版本。
+
+### 其他新增
+
+- **字体大小调节**：设置 → 主题 → 「字体大小（%）」输入 70~150 后点「应用字体」，解决部分手机字体显示异常。
+
+### 与上游同步
+
+本分支全部改动集中在 `android/app/src/main/java/dev/linjian/peek/mcp/` 新包、`MainActivity`/`activity_main.xml`/`AndroidManifest.xml`/`AppPrefs`/`UITheme` 等少量文件，`android/build.sh` 仅改了 APK 输出名。同步上游：
+
+```bash
+git fetch upstream
+git merge upstream/main
+# 若上游改了 MainActivity / activity_main.xml / AndroidManifest.xml，手工合入即可，冲突面极小
+git push origin main
+```
+
+推送 `android/**` 后 fork 的 Actions 会自动构建签名 APK（产物名 `Zhangxinchuang-public-v0.3.8.4-mcp1.apk`）。
+
+### 本地构建（Windows 说明）
+
+仓库本体是纯 Java + 手写 `build.sh`（aapt2 + javac + d8 + apksigner）。在 Windows 上跑 `bash android/build.sh` 需要：JDK 17、Android SDK `platforms;android-34` + `build-tools;34.0.0`、以及 `zip`。详见 `20260905_QA.md`。
+
+
 ## v0.3.8.4 日记写入兜底修复
 
 - 修复部分用户更新后“机能写日记正文，但保存时报日记本 id 对不上”的问题。
