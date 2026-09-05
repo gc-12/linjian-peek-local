@@ -88,7 +88,7 @@ public class MainActivity extends Activity {
     private Button drawerMcpButton, mcpToggleButton, fontApplyButton;
     private TextView mcpStatusText, mcpAddressText;
     private CheckBox mcpLanCheckbox;
-    private EditText fontPercentInput;
+    private EditText fontPercentInput, mcpPortInput;
     private View drawerMcp;
     private CheckBox remindersEnabled, batteryRuleEnabled, screenRuleEnabled, waterRuleEnabled, restRuleEnabled, cycleEnabled, foregroundPopupEnabled, homeModeEnabled, homeModeForceEnabled, appGateEnabled;
     private CheckBox guidianEnabled, guidianRemoteEnabled, guidianFullscreenEnabled, guidianQuietEnabled, calendarLunarEnabled, calendarRepeatEnabled, calendarBannerEnabled;
@@ -248,6 +248,7 @@ public class MainActivity extends Activity {
         drawerGuidian = findViewById(R.id.drawerGuidian); drawerGuidianSettings = findViewById(R.id.drawerGuidianSettings); drawerCalendar = findViewById(R.id.drawerCalendar);
         drawerMcpButton = findViewById(R.id.drawerMcpButton); drawerMcp = findViewById(R.id.drawerMcp); mcpToggleButton = findViewById(R.id.mcpToggleButton); mcpLanCheckbox = findViewById(R.id.mcpLanCheckbox);
         mcpStatusText = findViewById(R.id.mcpStatusText); mcpAddressText = findViewById(R.id.mcpAddressText);
+        mcpPortInput = findViewById(R.id.mcpPortInput);
         fontPercentInput = findViewById(R.id.fontPercentInput); fontApplyButton = findViewById(R.id.fontApplyButton);
         serverUrl = findViewById(R.id.serverUrl); tokenInput = findViewById(R.id.tokenInput); deviceInput = findViewById(R.id.deviceInput); intervalInput = findViewById(R.id.intervalInput); cityInput = findViewById(R.id.cityInput); weatherInput = findViewById(R.id.weatherInput); userNameInput = findViewById(R.id.userNameInput); companionNameInput = findViewById(R.id.companionNameInput);
         weatherAliasInput = findViewById(R.id.weatherAliasInput); weatherCityInput = findViewById(R.id.weatherCityInput); weatherNoteInput = findViewById(R.id.weatherNoteInput); calendarTitleInput = findViewById(R.id.calendarTitleInput); calendarDateInput = findViewById(R.id.calendarDateInput); calendarGroupInput = findViewById(R.id.calendarGroupInput); calendarNoteInput = findViewById(R.id.calendarNoteInput);
@@ -1689,6 +1690,7 @@ public class MainActivity extends Activity {
         if (guidianPromptInput != null) guidianPromptInput.setText(prefs.getString(GuidianState.KEY_PROMPTS, GuidianState.defaultPrompts(this)));
         if (guidianReasonInput != null) guidianReasonInput.setText(prefs.getString(GuidianState.KEY_REASONS, GuidianState.defaultReasons()));
         if (fontPercentInput != null) fontPercentInput.setText(String.valueOf(prefs.getInt(AppPrefs.KEY_FONT_PERCENT, 100)));
+        if (mcpPortInput != null) mcpPortInput.setText(String.valueOf(prefs.getInt(AppPrefs.KEY_MCP_PORT, 5000)));
         if (mcpLanCheckbox != null) mcpLanCheckbox.setChecked(prefs.getBoolean(AppPrefs.KEY_MCP_LAN, false));
     }
 
@@ -1703,6 +1705,20 @@ public class MainActivity extends Activity {
         if (tokenInput != null) { tokenInput.addTextChangedListener(watcher); tokenInput.setOnFocusChangeListener(saveOnBlur); }
         if (deviceInput != null) { deviceInput.addTextChangedListener(watcher); deviceInput.setOnFocusChangeListener(saveOnBlur); }
         if (intervalInput != null) { intervalInput.addTextChangedListener(watcher); intervalInput.setOnFocusChangeListener(saveOnBlur); }
+        if (mcpPortInput != null) mcpPortInput.setOnFocusChangeListener((v, focused) -> {
+            if (!focused) {
+                int port = parseMcpPort(mcpPortInput.getText().toString().trim());
+                AppPrefs.get(this).edit().putInt(AppPrefs.KEY_MCP_PORT, port).apply();
+                mcpPortInput.setText(String.valueOf(port));
+            }
+        });
+    }
+
+    private int parseMcpPort(String raw) {
+        try {
+            int p = Integer.parseInt(raw);
+            return Math.max(1024, Math.min(65535, p));
+        } catch (Exception e) { return 5000; }
     }
 
     private void saveConnectionSettingsOnly(boolean blocking) {

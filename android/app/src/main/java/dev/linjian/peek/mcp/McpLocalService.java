@@ -16,6 +16,7 @@ import android.os.PowerManager;
 import dev.linjian.peek.AppPrefs;
 import dev.linjian.peek.DebugState;
 import dev.linjian.peek.MainActivity;
+import dev.linjian.peek.R;
 
 /**
  * Foreground service hosting the local MCP server. Keeps a partial wake lock,
@@ -86,11 +87,12 @@ public class McpLocalService extends Service {
 
     private void startServer() {
         final boolean allowLan = AppPrefs.get(this).getBoolean(AppPrefs.KEY_MCP_LAN, false);
+        final int port = AppPrefs.mcpPort(this);
         final String token = McpLocalSecurity.getOrCreateToken(this);
         new Thread(() -> {
             try {
                 McpToolRegistry registry = new McpToolRegistry(getApplicationContext());
-                server = new McpHttpServer(token, allowLan, DEFAULT_PORT, registry,
+                server = new McpHttpServer(token, allowLan, port, registry,
                         "linjian-peek-local-mcp", AppPrefs.APP_VERSION_NAME,
                         new McpHttpServer.Listener() {
                             @Override
@@ -101,7 +103,6 @@ public class McpLocalService extends Service {
                                 DebugState.append(McpLocalService.this, "本地 MCP 服务已启动：" + currentUrl);
                                 updateNotification();
                             }
-
                             @Override
                             public void onStopped() {
                                 running = false;
@@ -131,7 +132,14 @@ public class McpLocalService extends Service {
     private void updateNotification(String statusText) {
         mainHandler.post(() -> {
             try {
-                String text = statusText != null ? statusText : (currentUrl.isEmpty() ? "未启动" : currentUrl);
+                String text;
+                if (statusText != null) {
+                    text = statusText;
+                } else if (!currentUrl.isEmpty()) {
+                    text = "运行中 · 端口 " + currentPort;
+                } else {
+                    text = "未启动";
+                }
                 NotificationManager nm = getSystemService(NotificationManager.class);
                 if (nm != null) nm.notify(NOTIFICATION_ID, buildNotification(text));
             } catch (Exception ignored) {
@@ -162,7 +170,7 @@ public class McpLocalService extends Service {
         Notification n = b
                 .setContentTitle("本地 MCP 服务运行中")
                 .setContentText(text)
-                .setSmallIcon(android.R.drawable.ic_menu_share)
+                .setSmallIcon(R.drawable.statusbar)
                 .setContentIntent(content)
                 .setOngoing(true)
                 .addAction(android.R.drawable.ic_menu_close_clear_cancel, "停止", stopPi)

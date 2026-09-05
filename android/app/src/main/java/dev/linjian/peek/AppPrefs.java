@@ -88,6 +88,12 @@ public class AppPrefs {
     public static String server(Context ctx) { return cleanServer(get(ctx).getString(KEY_SERVER, "")); }
     public static String token(Context ctx) { return get(ctx).getString(KEY_TOKEN, ""); }
     public static String device(Context ctx) { return get(ctx).getString(KEY_DEVICE, "android-phone"); }
+
+    public static int mcpPort(Context ctx) {
+        int saved = get(ctx).getInt(KEY_MCP_PORT, 5000);
+        if (saved < 1024 || saved > 65535) return 5000;
+        return saved;
+    }
     public static int interval(Context ctx) {
         int saved = get(ctx).getInt(KEY_INTERVAL, DEFAULT_POLL_INTERVAL_MS);
         if (saved < MIN_POLL_INTERVAL_MS) return DEFAULT_POLL_INTERVAL_MS;

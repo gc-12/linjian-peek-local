@@ -511,6 +511,11 @@
                     <TextView android:id="@+id/mcpStatusText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="状态：未启动" android:textSize="11sp" android:textColor="#FF7E928C" android:layout_marginTop="6dp" android:lineSpacingExtra="4dp" />
                     <TextView android:id="@+id/mcpAddressText" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="MCP 地址：未启动" android:textSize="11sp" android:textColor="#FF916E7B" android:layout_marginTop="4dp" android:lineSpacingExtra="4dp" />
                     <Button android:id="@+id/mcpToggleButton" android:layout_width="match_parent" android:layout_height="38dp" android:text="启动服务" android:textSize="12sp" android:textColor="#FFFFFFFF" android:background="@drawable/pill_primary" android:layout_marginTop="8dp" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center_vertical" android:layout_marginTop="6dp">
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="端口：" android:textSize="11sp" android:textColor="#FF7E928C" />
+                        <EditText android:id="@+id/mcpPortInput" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1" android:hint="5000" android:textSize="11sp" android:inputType="number" android:singleLine="true" />
+                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="（重启服务后生效）" android:textSize="10sp" android:textColor="#FF7E928C" android:layout_marginLeft="5dp" />
+                    </LinearLayout>
                     <CheckBox android:id="@+id/mcpLanCheckbox" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="允许局域网访问（同一 WiFi 的设备可连接）" android:textSize="11sp" android:layout_marginTop="4dp" />
                     <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="点地址可复制。开启局域网后，同一 WiFi 下知道地址的设备即可控制本机，请谨慎开启。" android:textSize="10sp" android:textColor="#FF7E928C" android:layout_marginTop="2dp" />
                 </LinearLayout>
