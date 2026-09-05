@@ -11,8 +11,8 @@ import java.util.Map;
 
 public class AppPrefs {
     public static final String PREFS = "linjian_peek";
-    public static final String APP_VERSION_NAME = "0.3.8.4";
-    public static final int APP_VERSION_CODE = 30804;
+    public static final String APP_VERSION_NAME = "0.3.8.4-mcp1";
+    public static final int APP_VERSION_CODE = 30805;
     public static final String KEY_SERVER = "server_url";
     public static final String KEY_TOKEN = "token";
     public static final String KEY_DEVICE = "device_id";
@@ -61,6 +61,10 @@ public class AppPrefs {
     public static final String KEY_HOME_COOLDOWN_MIN = "home_mode_cooldown_min";
     public static final String KEY_HOME_TARGET_PACKAGE = "home_mode_target_package";
     public static final String DEFAULT_HOME_TARGET_PACKAGE = "";
+
+    public static final String KEY_MCP_LAN = "mcp_lan";
+    public static final String KEY_MCP_PORT = "mcp_port";
+    public static final String KEY_FONT_PERCENT = "font_percent";
 
     public static SharedPreferences get(Context ctx) { return ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE); }
 

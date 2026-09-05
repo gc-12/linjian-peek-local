@@ -1,6 +1,8 @@
 package dev.linjian.peek;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 
@@ -137,4 +139,16 @@ public class UITheme {
     }
 
     public static float dp(float v) { return v * android.content.res.Resources.getSystem().getDisplayMetrics().density; }
+
+    /** 应用用户自定义的全局字体缩放（百分比 70~150），解决部分机型字体显示异常。 */
+    public static void applyFontScale(Activity activity) {
+        if (activity == null) return;
+        try {
+            int percent = AppPrefs.get(activity).getInt(AppPrefs.KEY_FONT_PERCENT, 100);
+            float scale = Math.max(0.7f, Math.min(1.5f, percent / 100f));
+            Configuration cfg = activity.getResources().getConfiguration();
+            cfg.fontScale = scale;
+            activity.getResources().updateConfiguration(cfg, activity.getResources().getDisplayMetrics());
+        } catch (Exception ignored) { }
+    }
 }

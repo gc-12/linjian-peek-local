@@ -29,6 +29,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.Base64;
 
 public class ScreenshotService extends AccessibilityService {
     private static volatile ScreenshotService instance;
@@ -354,6 +357,40 @@ public class ScreenshotService extends AccessibilityService {
             }
             @Override public void onFailure(int errorCode) { DebugState.append(ScreenshotService.this, "系统截图失败：errorCode=" + errorCode + "（可尝试关闭再开启无障碍）"); }
         });
+    }
+
+    public String captureScreenshotBase64() {
+        if (Build.VERSION.SDK_INT < 30) return "";
+        final CountDownLatch latch = new CountDownLatch(1);
+        final String[] holder = new String[1];
+        takeScreenshot(Display.DEFAULT_DISPLAY, executor, new TakeScreenshotCallback() {
+            @Override public void onSuccess(ScreenshotResult result) {
+                try {
+                    Bitmap hardwareBitmap = Bitmap.wrapHardwareBuffer(result.getHardwareBuffer(), result.getColorSpace());
+                    if (hardwareBitmap != null) {
+                        Bitmap bitmap = hardwareBitmap.copy(Bitmap.Config.ARGB_8888, false);
+                        hardwareBitmap.recycle();
+                        result.getHardwareBuffer().close();
+                        ByteArrayOutputStream out = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
+                        bitmap.recycle();
+                        if (out.size() > 100) holder[0] = Base64.getEncoder().encodeToString(out.toByteArray());
+                    } else {
+                        result.getHardwareBuffer().close();
+                    }
+                } catch (Exception e) {
+                    DebugState.append(ScreenshotService.this, "本地截图编码异常：" + shortMsg(e));
+                } finally {
+                    latch.countDown();
+                }
+            }
+            @Override public void onFailure(int errorCode) {
+                DebugState.append(ScreenshotService.this, "本地截图失败：errorCode=" + errorCode);
+                latch.countDown();
+            }
+        });
+        try { latch.await(8, TimeUnit.SECONDS); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+        return holder[0] == null ? "" : holder[0];
     }
 
     private void uploadScreenshot(byte[] data, String serverUrl, String token) {

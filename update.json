@@ -1,15 +1,12 @@
 {
-  "latest_version_name": "0.3.6.6",
-  "latest_version_code": 30606,
-  "apk_url": "https://github.com/linzhi-524/linjian-peek-public/releases/download/v0.3.6.6/zhangxinchuang-public-debug-apk.1.zip",
+  "latest_version_name": "0.3.8.4-mcp1",
+  "latest_version_code": 30805,
+  "apk_url": "https://github.com/gc-12/linjian-peek-local/releases/download/v0.3.8.4-mcp1/zhangxinchuang-public-v0.3.8.4-mcp1.apk",
   "sha256": "",
   "required": false,
   "changelog": [
-    "修复今日屏幕时间跨凌晨不重置：改为按手机本地 0 点到当前时间统计，并用 UsageEvents 裁剪今日区间。",
-    "新增公开版“此刻状态”卡片：显示手机姿态、环境光、当前 App 与授权后的定位。",
-    "设置页新增“此刻状态”折叠抽屉，定位权限与悬浮窗权限均放在设置页由用户主动开启。",
-    "应用门禁新增无障碍触发后的悬浮锁定页；没有悬浮窗权限时自动回退到旧锁定页。",
-    "设置页主题改为折叠抽屉；移除“窗面与陪伴…”与“头像由你…”两张说明卡，陪伴页和守护页保持不改。",
-    "固定签名保持不变，支持覆盖安装旧版本。"
+    "内置本地 MCP 服务：设置 → 本地 MCP 服务 → 启动服务，即可在 127.0.0.1:5000/mcp 提供 MCP 工具（截图、读屏、点击、输入、打开 App、闹钟、通知、应用门禁、专注模式、归电、守护日历、TA 的日记、小金库、外卖助手等）。",
+    "支持局域网访问：勾选“允许局域网访问”后，同一 WiFi 下的设备可通过 http://局域网IP:5000/mcp 访问。",
+    "主题设置新增字体大小调节：按百分比输入 70~150，解决部分手机字体显示异常。"
   ]
 }

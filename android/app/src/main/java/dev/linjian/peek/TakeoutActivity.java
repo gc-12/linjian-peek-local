@@ -33,6 +33,7 @@ public class TakeoutActivity extends Activity {
 
     @Override protected void onCreate(Bundle b) {
         super.onCreate(b);
+        UITheme.applyFontScale(this);
         loadTheme();
         buildRoot();
         showHome();

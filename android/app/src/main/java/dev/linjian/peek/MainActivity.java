@@ -7,6 +7,8 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.Context;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.ComponentName;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -49,6 +51,8 @@ import android.widget.Toast;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import dev.linjian.peek.mcp.McpLocalService;
+
 import java.util.Calendar;
 import java.util.Locale;
 import java.io.File;
@@ -81,6 +85,11 @@ public class MainActivity extends Activity {
     private Button themeCreamButton, themeBlueButton, themePeachButton, themeNightButton, themeMintButton, themePurpleButton, drawerThemeButton, drawerNowStateButton, locationPermissionButton, overlayPermissionButton, notificationListenerButton;
     private Button drawerConnectionButton, drawerPermissionButton, drawerControlTestButton, drawerKnownAppsButton, drawerHomeModeButton, drawerGateAddButton, drawerReminderButton, drawerCycleButton, drawerDebugButton, drawerLifeDetailsButton, drawerAppGateButton, drawerWeatherButton, drawerVersionButton, checkUpdateButton, downloadUpdateButton;
     private Button drawerGuidianButton, drawerGuidianSettingsButton, drawerCalendarButton, saveCalendarEventButton;
+    private Button drawerMcpButton, mcpToggleButton, fontApplyButton;
+    private TextView mcpStatusText, mcpAddressText;
+    private CheckBox mcpLanCheckbox;
+    private EditText fontPercentInput;
+    private View drawerMcp;
     private CheckBox remindersEnabled, batteryRuleEnabled, screenRuleEnabled, waterRuleEnabled, restRuleEnabled, cycleEnabled, foregroundPopupEnabled, homeModeEnabled, homeModeForceEnabled, appGateEnabled;
     private CheckBox guidianEnabled, guidianRemoteEnabled, guidianFullscreenEnabled, guidianQuietEnabled, calendarLunarEnabled, calendarRepeatEnabled, calendarBannerEnabled;
     private Button tabSettings, tabSee, tabControl, tabLife, tabGate, tabDebug;
@@ -129,6 +138,7 @@ public class MainActivity extends Activity {
 
     @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        UITheme.applyFontScale(this);
         setContentView(R.layout.activity_main);
         bindViews();
         buildMagazinePages();
@@ -175,6 +185,13 @@ public class MainActivity extends Activity {
         bindConnectionAutoSave();
 
         bindThemeButton(themeCreamButton, "奶油绿"); bindThemeButton(themeBlueButton, "雾蓝白"); bindThemeButton(themePeachButton, "白桃粉"); bindThemeButton(themeNightButton, "夜航黑"); bindThemeButton(themeMintButton, "薄荷透明"); bindThemeButton(themePurpleButton, "星云紫");
+        if (fontApplyButton != null) fontApplyButton.setOnClickListener(v -> applyFontPercent());
+        if (mcpToggleButton != null) mcpToggleButton.setOnClickListener(v -> toggleLocalMcp());
+        if (mcpAddressText != null) mcpAddressText.setOnClickListener(v -> copyMcpAddress());
+        if (mcpLanCheckbox != null) mcpLanCheckbox.setOnCheckedChangeListener((b, checked) -> {
+            AppPrefs.get(this).edit().putBoolean(AppPrefs.KEY_MCP_LAN, checked).apply();
+            if (McpLocalService.isRunning()) Toast.makeText(this, "已保存，重启本地 MCP 服务后生效", Toast.LENGTH_SHORT).show();
+        });
 
         bindDrawer(drawerLifeDetailsButton, lifeStatusText, "展开详情");
         bindDrawer(drawerThemeButton, drawerTheme, "主题");
@@ -182,6 +199,7 @@ public class MainActivity extends Activity {
         bindDrawer(drawerAppGateButton, drawerAppGate, "应用门禁");
         bindDrawer(drawerWeatherButton, drawerWeather, "天气地区");
         bindDrawer(drawerConnectionButton, drawerConnection, "连接设置");
+        bindDrawer(drawerMcpButton, drawerMcp, "本地 MCP 服务");
         bindDrawer(drawerPermissionButton, drawerPermission, "权限与运行");
         bindDrawer(drawerControlTestButton, drawerControlTest, "本机测试抽屉");
         bindDrawer(drawerKnownAppsButton, drawerKnownApps, "应用包名抽屉");
@@ -228,6 +246,9 @@ public class MainActivity extends Activity {
         heroCard = findViewById(R.id.heroCard); bottomNav = findViewById(R.id.bottomNav);
         drawerTheme = findViewById(R.id.drawerTheme); drawerNowState = findViewById(R.id.drawerNowState); drawerConnection = findViewById(R.id.drawerConnection); drawerPermission = findViewById(R.id.drawerPermission); drawerControlTest = findViewById(R.id.drawerControlTest); drawerKnownApps = findViewById(R.id.drawerKnownApps); drawerHomeMode = findViewById(R.id.drawerHomeMode); drawerGateAdd = findViewById(R.id.drawerGateAdd); drawerReminder = findViewById(R.id.drawerReminder); drawerCycle = findViewById(R.id.drawerCycle); drawerDebug = findViewById(R.id.drawerDebug); drawerAppGate = findViewById(R.id.drawerAppGate); drawerWeather = findViewById(R.id.drawerWeather); drawerVersion = findViewById(R.id.drawerVersion);
         drawerGuidian = findViewById(R.id.drawerGuidian); drawerGuidianSettings = findViewById(R.id.drawerGuidianSettings); drawerCalendar = findViewById(R.id.drawerCalendar);
+        drawerMcpButton = findViewById(R.id.drawerMcpButton); drawerMcp = findViewById(R.id.drawerMcp); mcpToggleButton = findViewById(R.id.mcpToggleButton); mcpLanCheckbox = findViewById(R.id.mcpLanCheckbox);
+        mcpStatusText = findViewById(R.id.mcpStatusText); mcpAddressText = findViewById(R.id.mcpAddressText);
+        fontPercentInput = findViewById(R.id.fontPercentInput); fontApplyButton = findViewById(R.id.fontApplyButton);
         serverUrl = findViewById(R.id.serverUrl); tokenInput = findViewById(R.id.tokenInput); deviceInput = findViewById(R.id.deviceInput); intervalInput = findViewById(R.id.intervalInput); cityInput = findViewById(R.id.cityInput); weatherInput = findViewById(R.id.weatherInput); userNameInput = findViewById(R.id.userNameInput); companionNameInput = findViewById(R.id.companionNameInput);
         weatherAliasInput = findViewById(R.id.weatherAliasInput); weatherCityInput = findViewById(R.id.weatherCityInput); weatherNoteInput = findViewById(R.id.weatherNoteInput); calendarTitleInput = findViewById(R.id.calendarTitleInput); calendarDateInput = findViewById(R.id.calendarDateInput); calendarGroupInput = findViewById(R.id.calendarGroupInput); calendarNoteInput = findViewById(R.id.calendarNoteInput);
         batteryThresholdInput = findViewById(R.id.batteryThresholdInput); screenThresholdInput = findViewById(R.id.screenThresholdInput); waterIntervalInput = findViewById(R.id.waterIntervalInput); restIntervalInput = findViewById(R.id.restIntervalInput);
@@ -1667,6 +1688,8 @@ public class MainActivity extends Activity {
         if (guidianTargetPackageInput != null) guidianTargetPackageInput.setText(prefs.getString(GuidianState.KEY_TARGET_PACKAGE, AppPrefs.homeTargetPackage(this)));
         if (guidianPromptInput != null) guidianPromptInput.setText(prefs.getString(GuidianState.KEY_PROMPTS, GuidianState.defaultPrompts(this)));
         if (guidianReasonInput != null) guidianReasonInput.setText(prefs.getString(GuidianState.KEY_REASONS, GuidianState.defaultReasons()));
+        if (fontPercentInput != null) fontPercentInput.setText(String.valueOf(prefs.getInt(AppPrefs.KEY_FONT_PERCENT, 100)));
+        if (mcpLanCheckbox != null) mcpLanCheckbox.setChecked(prefs.getBoolean(AppPrefs.KEY_MCP_LAN, false));
     }
 
     private void bindConnectionAutoSave() {
@@ -1692,6 +1715,56 @@ public class MainActivity extends Activity {
         }
         if (intervalInput != null) e.putInt(AppPrefs.KEY_INTERVAL, parseInterval(intervalInput.getText().toString().trim()));
         if (blocking) e.commit(); else e.apply();
+    }
+
+    private void applyFontPercent() {
+        int percent = parseFontPercent(fontPercentInput == null ? "" : fontPercentInput.getText().toString().trim());
+        AppPrefs.get(this).edit().putInt(AppPrefs.KEY_FONT_PERCENT, percent).apply();
+        UITheme.applyFontScale(this);
+        Toast.makeText(this, "字体大小已设为 " + percent + "%", Toast.LENGTH_SHORT).show();
+        recreate();
+    }
+
+    private int parseFontPercent(String raw) {
+        try {
+            int v = Integer.parseInt(raw);
+            return Math.max(70, Math.min(150, v));
+        } catch (Exception e) { return 100; }
+    }
+
+    private void toggleLocalMcp() {
+        if (McpLocalService.isRunning()) {
+            stopService(new Intent(this, McpLocalService.class));
+            Toast.makeText(this, "正在停止本地 MCP 服务", Toast.LENGTH_SHORT).show();
+        } else {
+            Intent i = new Intent(this, McpLocalService.class);
+            if (Build.VERSION.SDK_INT >= 26) startForegroundService(i); else startService(i);
+            Toast.makeText(this, "正在启动本地 MCP 服务", Toast.LENGTH_SHORT).show();
+        }
+        refreshMcpStatus();
+    }
+
+    private void copyMcpAddress() {
+        String url = McpLocalService.currentUrl();
+        if (url == null || url.isEmpty()) { Toast.makeText(this, "服务未启动，无地址可复制", Toast.LENGTH_SHORT).show(); return; }
+        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        if (cm != null) { cm.setPrimaryClip(ClipData.newPlainText("MCP", url)); Toast.makeText(this, "已复制：" + url, Toast.LENGTH_LONG).show(); }
+    }
+
+    private void refreshMcpStatus() {
+        boolean on = McpLocalService.isRunning();
+        String url = McpLocalService.currentUrl();
+        if (mcpStatusText != null) {
+            mcpStatusText.setText(on ? ("状态：运行中 · 端口 " + (McpLocalService.currentPort() > 0 ? McpLocalService.currentPort() : "-")) : "状态：未启动");
+        }
+        if (mcpAddressText != null) {
+            mcpAddressText.setText("MCP 地址：" + (on && !url.isEmpty() ? url : "未启动"));
+        }
+        if (mcpToggleButton != null) {
+            mcpToggleButton.setText(on ? "停止服务" : "启动服务");
+            mcpToggleButton.setBackgroundResource(on ? R.drawable.pill_danger : R.drawable.pill_primary);
+            mcpToggleButton.setTextColor(0xFFFFFFFF);
+        }
     }
 
     private void saveSettings() {
@@ -2601,6 +2674,7 @@ public class MainActivity extends Activity {
         updateVersionUi();
         applyVisualTheme();
         updateGuardianCalendarView();
+        refreshMcpStatus();
     }
 
     private void renderCompanionAvatar() {
